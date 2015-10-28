@@ -93,6 +93,12 @@ shared_ptr<Net<Dtype> > Net_Init_Load(
   return net;
 }
 
+void Net_load_blobs_from(Net<Dtype>& net, string filename) {
+  CheckFile(filename);
+  net.CopyTrainedLayersFrom(filename);
+}
+
+
 void Net_Save(const Net<Dtype>& net, string filename) {
   NetParameter net_param;
   net.ToProto(&net_param, false);
@@ -207,6 +213,8 @@ BOOST_PYTHON_MODULE(_caffe) {
     .def("_forward", &Net<Dtype>::ForwardFromTo)
     .def("_backward", &Net<Dtype>::BackwardFromTo)
     .def("reshape", &Net<Dtype>::Reshape)
+    .def("load_blobs_from", &Net_load_blobs_from)
+
     // The cast is to select a particular overload.
     .def("copy_from", static_cast<void (Net<Dtype>::*)(const string)>(
         &Net<Dtype>::CopyTrainedLayersFrom))
@@ -266,13 +274,19 @@ BOOST_PYTHON_MODULE(_caffe) {
 
   bp::class_<SGDSolver<Dtype>, bp::bases<Solver<Dtype> >,
     shared_ptr<SGDSolver<Dtype> >, boost::noncopyable>(
-        "SGDSolver", bp::init<string>());
+        "SGDSolver", bp::no_init)
+    .def(bp::init<string>())
+    .def(bp::init<string, shared_ptr<Net<Dtype> > >());
   bp::class_<NesterovSolver<Dtype>, bp::bases<Solver<Dtype> >,
     shared_ptr<NesterovSolver<Dtype> >, boost::noncopyable>(
-        "NesterovSolver", bp::init<string>());
+        "NesterovSolver", bp::no_init)
+    .def(bp::init<string>())
+    .def(bp::init<string, shared_ptr<Net<Dtype> > >());
   bp::class_<AdaGradSolver<Dtype>, bp::bases<Solver<Dtype> >,
     shared_ptr<AdaGradSolver<Dtype> >, boost::noncopyable>(
-        "AdaGradSolver", bp::init<string>());
+        "AdaGradSolver", bp::no_init)
+    .def(bp::init<string>())
+    .def(bp::init<string, shared_ptr<Net<Dtype> > >());
 
   bp::def("get_solver", &GetSolverFromFile,
       bp::return_value_policy<bp::manage_new_object>());

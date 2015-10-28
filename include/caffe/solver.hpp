@@ -19,7 +19,11 @@ class Solver {
  public:
   explicit Solver(const SolverParameter& param);
   explicit Solver(const string& param_file);
+  Solver(const string& param_file,
+         shared_ptr<Net<Dtype> > &net);  
   void Init(const SolverParameter& param);
+  void InitForNet(const SolverParameter& param,
+                    shared_ptr<Net<Dtype> > &net);  
   void InitTrainNet();
   void InitTestNets();
   // The main entry of the solver function. In default, iter will be zero. Pass
@@ -74,6 +78,9 @@ class SGDSolver : public Solver<Dtype> {
       : Solver<Dtype>(param) { PreSolve(); }
   explicit SGDSolver(const string& param_file)
       : Solver<Dtype>(param_file) { PreSolve(); }
+  SGDSolver(const string &param_file,
+            shared_ptr<Net<Dtype> > net)
+      : Solver<Dtype>(param_file, net) { PreSolve(); }      
 
   const vector<shared_ptr<Blob<Dtype> > >& history() { return history_; }
 
@@ -103,6 +110,9 @@ class NesterovSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) {}
   explicit NesterovSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) {}
+  NesterovSolver(const string &param_file,
+                 shared_ptr<Net<Dtype> > net)
+        : SGDSolver<Dtype>(param_file, net) {}
 
  protected:
   virtual void ComputeUpdateValue(int param_id, Dtype rate);
@@ -117,6 +127,9 @@ class AdaGradSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
   explicit AdaGradSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) { constructor_sanity_check(); }
+  AdaGradSolver(const string &param_file,
+                shared_ptr<Net<Dtype> > net)
+        : SGDSolver<Dtype>(param_file, net) { constructor_sanity_check(); }
 
  protected:
   virtual void ComputeUpdateValue(int param_id, Dtype rate);

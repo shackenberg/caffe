@@ -28,6 +28,34 @@ Solver<Dtype>::Solver(const string& param_file)
 }
 
 template <typename Dtype>
+void Solver<Dtype>::InitForNet(const SolverParameter& param,
+                               shared_ptr<Net<Dtype> > &net) {
+  LOG(INFO) << "Initializing solver from parameters: " << std::endl
+            << param.DebugString();
+  param_ = param;
+  CHECK_GE(param_.average_loss(), 1) << "average_loss should be non-negative.";
+  if (param_.random_seed() >= 0) {
+    Caffe::set_random_seed(param_.random_seed());
+  }
+  LOG(INFO) << "Solver scaffolding done.";
+  iter_ = 0;
+  current_step_ = 0;
+  // This assumes that the net is configured for training. This method
+  // is intended to be used with the Barrista package, and additional
+  // checks are performed in the barrista.Net.fit method.
+  net_ = net;
+}
+
+template <typename Dtype>
+Solver<Dtype>::Solver(const string& param_file,
+                      shared_ptr<Net<Dtype> > &net)
+    : net_() {
+  SolverParameter param;
+  ReadProtoFromTextFileOrDie(param_file, &param);
+  InitForNet(param, net);
+}
+
+template <typename Dtype>
 void Solver<Dtype>::Init(const SolverParameter& param) {
   LOG(INFO) << "Initializing solver from parameters: " << std::endl
             << param.DebugString();
